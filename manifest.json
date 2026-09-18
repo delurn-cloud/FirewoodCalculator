@@ -1,0 +1,9 @@
+{
+  "name": "Firewood Calculator",
+  "short_name": "Firewood",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#f4f1eb",
+  "theme_color": "#333333",
+  "icons": []
+}

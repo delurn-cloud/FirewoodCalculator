@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#333333">
+<link rel="manifest" href="manifest.json">
+<title>Firewood Calculator</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;padding:16px;font-family:Arial,sans-serif;background:#f4f1eb;color:#222;-webkit-tap-highlight-color:transparent}
+.app{max-width:500px;margin:0 auto}
+h1{text-align:center;margin:6px 0 4px;font-size:30px}
+.subtitle{text-align:center;margin:0 0 20px;color:#555;font-size:16px}
+.card{background:#fff;border-radius:14px;padding:18px;margin-bottom:16px;box-shadow:0 2px 8px rgba(0,0,0,.10)}
+label{display:block;font-size:20px;font-weight:bold;margin-bottom:7px}
+.measure{display:flex;gap:8px;margin-bottom:16px}
+input,select{min-width:0;padding:14px 10px;font-size:21px;border:2px solid #bbb;border-radius:10px;background:#fff}
+input{flex:1}
+select{width:112px}
+input:focus,select:focus{border-color:#555;outline:none}
+button{width:100%;border:0;border-radius:12px;padding:16px;font-size:23px;font-weight:bold;margin-top:4px;cursor:pointer}
+#calculate{background:#333;color:#fff}
+#clear{background:#ddd;color:#222;margin-top:10px}
+.result{text-align:center}
+.result .big{font-size:42px;font-weight:bold;margin:8px 0}
+.result .secondary{font-size:21px;color:#555}
+.note{text-align:center;font-size:14px;color:#666;line-height:1.4}
+.install{display:none;background:#eee;text-align:center}
+.install button{background:#555;color:#fff;font-size:18px}
+</style>
+</head>
+<body>
+<div class="app">
+<h1>🔥 Firewood Calculator</h1>
+<p class="subtitle">Measure your woodpile</p>
+
+<div class="card">
+<label for="length">Length</label>
+<div class="measure">
+<input id="length" type="number" inputmode="decimal" min="0" step="any" placeholder="0">
+<select id="lengthUnit"><option value="ft">feet</option><option value="in">inches</option></select>
+</div>
+
+<label for="height">Height</label>
+<div class="measure">
+<input id="height" type="number" inputmode="decimal" min="0" step="any" placeholder="0">
+<select id="heightUnit"><option value="ft">feet</option><option value="in">inches</option></select>
+</div>
+
+<label for="depth">Depth</label>
+<div class="measure">
+<input id="depth" type="number" inputmode="decimal" min="0" step="any" placeholder="0">
+<select id="depthUnit"><option value="ft">feet</option><option value="in">inches</option></select>
+</div>
+
+<button id="calculate" onclick="calculate()">CALCULATE</button>
+<button id="clear" onclick="clearAll()">CLEAR</button>
+</div>
+
+<div class="card result" id="result" style="display:none">
+<div class="secondary">Your woodpile contains approximately</div>
+<div class="big" id="cords">0.00 cords</div>
+<div class="secondary" id="cubicFeet">0 cubic feet</div>
+</div>
+
+<div class="card install" id="installCard">
+<div style="font-size:18px;font-weight:bold">Put Firewood Calculator on the home screen</div>
+<button onclick="installApp()">ADD TO HOME SCREEN</button>
+</div>
+
+<div class="note">One full cord = 128 cubic feet.<br>This calculator measures the volume of the stacked wood.</div>
+</div>
+
+<script>
+let deferredPrompt=null;
+
+function feet(value,unit){ return unit==="in" ? value/12 : value; }
+
+function calculate(){
+ const ids=["length","height","depth"];
+ const vals=ids.map(id=>parseFloat(document.getElementById(id).value));
+ if(vals.some(v=>!Number.isFinite(v)||v<=0)){alert("Please enter all three measurements.");return}
+ const L=feet(vals[0],document.getElementById("lengthUnit").value);
+ const H=feet(vals[1],document.getElementById("heightUnit").value);
+ const D=feet(vals[2],document.getElementById("depthUnit").value);
+ const cubicFeet=L*H*D, cords=cubicFeet/128;
+ document.getElementById("cords").textContent=cords.toFixed(2)+(cords===1?" cord":" cords");
+ document.getElementById("cubicFeet").textContent=cubicFeet.toFixed(1)+" cubic feet";
+ document.getElementById("result").style.display="block";
+}
+
+function clearAll(){
+ ["length","height","depth"].forEach(id=>document.getElementById(id).value="");
+ document.getElementById("result").style.display="none";
+ document.getElementById("length").focus();
+}
+
+window.addEventListener("beforeinstallprompt",e=>{
+ e.preventDefault(); deferredPrompt=e;
+ document.getElementById("installCard").style.display="block";
+});
+
+async function installApp(){
+ if(!deferredPrompt)return;
+ deferredPrompt.prompt();
+ await deferredPrompt.userChoice;
+ deferredPrompt=null;
+ document.getElementById("installCard").style.display="none";
+}
+
+if("serviceWorker" in navigator){
+ window.addEventListener("load",()=>navigator.serviceWorker.register("service-worker.js"));
+}
+</script>
+</body>
+</html>
