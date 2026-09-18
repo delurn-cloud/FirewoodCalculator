@@ -17,7 +17,7 @@ h1{text-align:center;margin:6px 0 4px;font-size:30px}
 label{display:block;font-size:20px;font-weight:bold;margin-bottom:7px}
 .measure{display:flex;gap:8px;margin-bottom:16px}
 input,select{min-width:0;padding:14px 10px;font-size:21px;border:2px solid #bbb;border-radius:10px;background:#fff}
-input{flex:1} select{width:112px}
+input{flex:1}select{width:112px}
 input:focus,select:focus{border-color:#555;outline:none}
 button{width:100%;border:0;border-radius:12px;padding:16px;font-size:23px;font-weight:bold;margin-top:4px;cursor:pointer}
 #calculate{background:#333;color:#fff}
@@ -31,35 +31,85 @@ button{width:100%;border:0;border-radius:12px;padding:16px;font-size:23px;font-w
 <h1>🔥 Firewood Calculator</h1>
 <p class="subtitle">Measure your woodpile</p>
 <div class="card">
-<label for="length">Length</label>
-<div class="measure"><input id="length" type="number" inputmode="decimal" min="0" step="any" placeholder="0"><select id="lengthUnit"><option value="ft">feet</option><option value="in">inches</option></select></div>
-<label for="height">Height</label>
-<div class="measure"><input id="height" type="number" inputmode="decimal" min="0" step="any" placeholder="0"><select id="heightUnit"><option value="ft">feet</option><option value="in">inches</option></select></div>
-<label for="depth">Depth</label>
-<div class="measure"><input id="depth" type="number" inputmode="decimal" min="0" step="any" placeholder="0"><select id="depthUnit"><option value="ft">feet</option><option value="in">inches</option></select></div>
-<button id="calculate" onclick="calculate()">CALCULATE</button>
-<button id="clear" onclick="clearAll()">CLEAR</button>
+<label for="lengthInput">Length</label>
+<div class="measure"><input id="lengthInput" type="number" inputmode="decimal" min="0" step="any" placeholder="0"><select id="lengthUnit"><option value="ft">feet</option><option value="in">inches</option></select></div>
+
+<label for="heightInput">Height</label>
+<div class="measure"><input id="heightInput" type="number" inputmode="decimal" min="0" step="any" placeholder="0"><select id="heightUnit"><option value="ft">feet</option><option value="in">inches</option></select></div>
+
+<label for="depthInput">Depth</label>
+<div class="measure"><input id="depthInput" type="number" inputmode="decimal" min="0" step="any" placeholder="0"><select id="depthUnit"><option value="ft">feet</option><option value="in">inches</option></select></div>
+
+<button id="calculateButton" type="button">CALCULATE</button>
+<button id="clearButton" type="button">CLEAR</button>
 </div>
-<div class="card result" id="result" style="display:none">
+
+<div class="card result" id="resultCard" style="display:none">
 <div class="secondary">Your woodpile contains approximately</div>
-<div class="big" id="cords">0.00 cords</div>
-<div class="secondary" id="cubicFeet">0 cubic feet</div>
+<div class="big" id="cordsResult">0.00 cords</div>
+<div class="secondary" id="cubicFeetResult">0 cubic feet</div>
 </div>
+
 <div class="note">One full cord = 128 cubic feet.<br>This calculator measures the volume of the stacked wood.</div>
 </div>
+
 <script>
-function toFeet(v,u){return u==="in"?v/12:v}
-function calculate(){
- const a=parseFloat(length.value),b=parseFloat(height.value),c=parseFloat(depth.value);
- if(![a,b,c].every(v=>Number.isFinite(v)&&v>0)){alert("Please enter all three measurements.");return}
- const cubicFeet=toFeet(a,lengthUnit.value)*toFeet(b,heightUnit.value)*toFeet(c,depthUnit.value);
- const cords=cubicFeet/128;
- document.getElementById("cords").textContent=cords.toFixed(2)+(cords===1?" cord":" cords");
- document.getElementById("cubicFeet").textContent=cubicFeet.toFixed(1)+" cubic feet";
- result.style.display="block";
-}
-function clearAll(){length.value="";height.value="";depth.value="";result.style.display="none";length.focus()}
-if("serviceWorker" in navigator){window.addEventListener("load",()=>navigator.serviceWorker.register("service-worker.js").catch(()=>{}))}
+(function () {
+    const lengthInput = document.getElementById("lengthInput");
+    const heightInput = document.getElementById("heightInput");
+    const depthInput = document.getElementById("depthInput");
+
+    const lengthUnit = document.getElementById("lengthUnit");
+    const heightUnit = document.getElementById("heightUnit");
+    const depthUnit = document.getElementById("depthUnit");
+
+    const resultCard = document.getElementById("resultCard");
+    const cordsResult = document.getElementById("cordsResult");
+    const cubicFeetResult = document.getElementById("cubicFeetResult");
+
+    function toFeet(value, unit) {
+        return unit === "in" ? value / 12 : value;
+    }
+
+    function calculate() {
+        const length = parseFloat(lengthInput.value);
+        const height = parseFloat(heightInput.value);
+        const depth = parseFloat(depthInput.value);
+
+        if (![length, height, depth].every(function (v) {
+            return Number.isFinite(v) && v > 0;
+        })) {
+            alert("Please enter all three measurements.");
+            return;
+        }
+
+        const L = toFeet(length, lengthUnit.value);
+        const H = toFeet(height, heightUnit.value);
+        const D = toFeet(depth, depthUnit.value);
+
+        const cubicFeet = L * H * D;
+        const cords = cubicFeet / 128;
+
+        cordsResult.textContent =
+            cords.toFixed(2) + (cords === 1 ? " cord" : " cords");
+
+        cubicFeetResult.textContent = cubicFeet.toFixed(1) + " cubic feet";
+        resultCard.style.display = "block";
+    }
+
+    function clearAll() {
+        lengthInput.value = "";
+        heightInput.value = "";
+        depthInput.value = "";
+
+        resultCard.style.display = "none";
+
+        lengthInput.focus();
+    }
+
+    document.getElementById("calculateButton").addEventListener("click", calculate);
+    document.getElementById("clearButton").addEventListener("click", clearAll);
+})();
 </script>
 </body>
 </html>
